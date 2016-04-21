@@ -356,21 +356,17 @@ static int aic32x4_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 static int aic32x4_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
 	struct snd_soc_codec *codec = codec_dai->codec;
-	u8 iface_reg_1;
-	u8 iface_reg_2;
-	u8 iface_reg_3;
-
-	iface_reg_1 = snd_soc_read(codec, AIC32X4_IFACE1);
-	iface_reg_1 = iface_reg_1 & ~(3 << 6 | 3 << 2);
-	iface_reg_2 = snd_soc_read(codec, AIC32X4_IFACE2);
-	iface_reg_2 = 0;
-	iface_reg_3 = snd_soc_read(codec, AIC32X4_IFACE3);
-	iface_reg_3 = iface_reg_3 & ~(1 << 3);
+	u8 offset = 0;
+	u8 interface;
+	u8 bclk_polarity = AIC32X4_BCLK_POLARITY_NORM;
+	u8 bclk_master = 0;
+	u8 wclk_master = 0;
 
 	/* set master/slave audio interface */
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBM_CFM:
-		iface_reg_1 |= AIC32X4_BCLKMASTER | AIC32X4_WCLKMASTER;
+		bclk_master = AIC32X4_BCLKMASTER;
+		wclk_master = AIC32X4_WCLKMASTER;
 		break;
 	case SND_SOC_DAIFMT_CBS_CFS:
 		break;
@@ -378,35 +374,37 @@ static int aic32x4_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 		printk(KERN_ERR "aic32x4: invalid DAI master/slave interface\n");
 		return -EINVAL;
 	}
+	snd_soc_update_bits(codec, AIC32X4_IFACE1, AIC32X4_BCLKMASTER,
+			bclk_master);
+	snd_soc_update_bits(codec, AIC32X4_IFACE1, AIC32X4_WCLKMASTER,
+			wclk_master);
 
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 	case SND_SOC_DAIFMT_I2S:
+		interface = AIC32X4_I2S_MODE;
 		break;
 	case SND_SOC_DAIFMT_DSP_A:
-		iface_reg_1 |= (AIC32X4_DSP_MODE << AIC32X4_PLLJ_SHIFT);
-		iface_reg_3 |= (1 << 3); /* invert bit clock */
-		iface_reg_2 = 0x01; /* add offset 1 */
-		break;
+		offset = 1;
 	case SND_SOC_DAIFMT_DSP_B:
-		iface_reg_1 |= (AIC32X4_DSP_MODE << AIC32X4_PLLJ_SHIFT);
-		iface_reg_3 |= (1 << 3); /* invert bit clock */
+		interface = AIC32X4_DSP_MODE;
+		bclk_polarity = AIC32X4_BCLK_POLARITY_INVERT;
 		break;
 	case SND_SOC_DAIFMT_RIGHT_J:
-		iface_reg_1 |=
-			(AIC32X4_RIGHT_JUSTIFIED_MODE << AIC32X4_PLLJ_SHIFT);
+		interface = AIC32X4_RIGHT_JUSTIFIED_MODE;
 		break;
 	case SND_SOC_DAIFMT_LEFT_J:
-		iface_reg_1 |=
-			(AIC32X4_LEFT_JUSTIFIED_MODE << AIC32X4_PLLJ_SHIFT);
+		interface = AIC32X4_LEFT_JUSTIFIED_MODE;
 		break;
 	default:
 		printk(KERN_ERR "aic32x4: invalid DAI interface format\n");
 		return -EINVAL;
 	}
 
-	snd_soc_write(codec, AIC32X4_IFACE1, iface_reg_1);
-	snd_soc_write(codec, AIC32X4_IFACE2, iface_reg_2);
-	snd_soc_write(codec, AIC32X4_IFACE3, iface_reg_3);
+	snd_soc_update_bits(codec, AIC32X4_IFACE1, AIC32X4_AUDIO_INTERFACE_MASK,
+			interface << AIC32X4_AUDIO_INTERFACE_SHIFT);
+	snd_soc_write(codec, AIC32X4_IFACE2, offset);
+	snd_soc_update_bits(codec, AIC32X4_IFACE3, AIC32X4_BCLK_POLARITY_MASK,
+			bclk_polarity << AIC32X4_BCLK_POLARITY_SHIFT);
 	return 0;
 }
 

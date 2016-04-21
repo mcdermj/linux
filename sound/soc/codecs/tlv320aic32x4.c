@@ -422,6 +422,22 @@ static int aic32x4_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	return 0;
 }
 
+static int aic32x4_set_pll(struct snd_soc_codec *codec, int p, int j, int d)
+{
+	/* We will fix R value to 1 and will make P & J=K.D as varialble */
+	snd_soc_update_bits(codec, AIC32X4_PLLPR, AIC32X4_PLLR_MASK, 1);
+	snd_soc_update_bits(codec, AIC32X4_PLLPR, AIC32X4_PLLP_MASK,
+			p << AIC32X4_PLLP_SHIFT);
+
+	snd_soc_write(codec, AIC32X4_PLLJ, j);
+
+	snd_soc_write(codec, AIC32X4_PLLDMSB, (d >> 8));
+	snd_soc_write(codec, AIC32X4_PLLDLSB,
+		      (d & 0xff));
+
+	return 0;
+}
+
 static int aic32x4_hw_params(struct snd_pcm_substream *substream,
 			     struct snd_pcm_hw_params *params,
 			     struct snd_soc_dai *dai)
@@ -443,16 +459,8 @@ static int aic32x4_hw_params(struct snd_pcm_substream *substream,
 	snd_soc_update_bits(codec, AIC32X4_IFACE3, AIC32X4_BDIV_CLKIN_MASK,
 			AIC32X4_BDIV_CLKIN_DAC_MOD_CLK);
 
-	/* We will fix R value to 1 and will make P & J=K.D as varialble */
-	snd_soc_update_bits(codec, AIC32X4_PLLPR, AIC32X4_PLLR_MASK, 1);
-	snd_soc_update_bits(codec, AIC32X4_PLLPR, AIC32X4_PLLP_MASK,
-			aic32x4_divs[i].p_val << AIC32X4_PLLP_SHIFT);
-
-	snd_soc_write(codec, AIC32X4_PLLJ, aic32x4_divs[i].pll_j);
-
-	snd_soc_write(codec, AIC32X4_PLLDMSB, (aic32x4_divs[i].pll_d >> 8));
-	snd_soc_write(codec, AIC32X4_PLLDLSB,
-		      (aic32x4_divs[i].pll_d & 0xff));
+	aic32x4_set_pll(codec, aic32x4_divs[i].p_val, aic32x4_divs[i].pll_j,
+			aic32x4_divs[i].pll_d);
 
 	snd_soc_update_bits(codec, AIC32X4_NDAC, ~AIC32X4_NDACEN,
 			aic32x4_divs[i].ndac);

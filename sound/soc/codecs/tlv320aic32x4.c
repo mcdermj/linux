@@ -616,7 +616,6 @@ static struct snd_soc_dai_driver aic32x4_dai = {
 static int aic32x4_codec_probe(struct snd_soc_codec *codec)
 {
 	struct aic32x4_priv *aic32x4 = snd_soc_codec_get_drvdata(codec);
-	u32 tmp_reg;
 
 	if (gpio_is_valid(aic32x4->rstn_gpio)) {
 		ndelay(10);
@@ -626,23 +625,24 @@ static int aic32x4_codec_probe(struct snd_soc_codec *codec)
 	snd_soc_write(codec, AIC32X4_RESET, 0x01);
 
 	/* Power platform configuration */
-	if (aic32x4->power_cfg & AIC32X4_PWR_MICBIAS_2075_LDOIN) {
-		snd_soc_write(codec, AIC32X4_MICBIAS, AIC32X4_MICBIAS_LDOIN |
-						      AIC32X4_MICBIAS_2075V);
-	}
+	if (aic32x4->power_cfg & AIC32X4_PWR_MICBIAS_2075_LDOIN)
+		snd_soc_update_bits(codec, AIC32X4_MICBIAS,
+				AIC32X4_MICBIAS_LDOIN | AIC32X4_MICBIAS_2075V,
+				AIC32X4_MICBIAS_LDOIN | AIC32X4_MICBIAS_2075V);
+
 	if (aic32x4->power_cfg & AIC32X4_PWR_AVDD_DVDD_WEAK_DISABLE)
 		snd_soc_write(codec, AIC32X4_PWRCFG, AIC32X4_AVDDWEAKDISABLE);
 
-	tmp_reg = (aic32x4->power_cfg & AIC32X4_PWR_AIC32X4_LDO_ENABLE) ?
-			AIC32X4_LDOCTLEN : 0;
-	snd_soc_write(codec, AIC32X4_LDOCTL, tmp_reg);
+	if (aic32x4->power_cfg & AIC32X4_PWR_AIC32X4_LDO_ENABLE)
+		snd_soc_update_bits(codec, AIC32X4_LDOCTL, AIC32X4_LDOCTLEN,
+				AIC32X4_LDOCTLEN);
 
-	tmp_reg = snd_soc_read(codec, AIC32X4_CMMODE);
 	if (aic32x4->power_cfg & AIC32X4_PWR_CMMODE_LDOIN_RANGE_18_36)
-		tmp_reg |= AIC32X4_LDOIN_18_36;
+		snd_soc_update_bits(codec, AIC32X4_CMMODE, AIC32X4_LDOIN_18_36,
+				AIC32X4_LDOIN_18_36);
 	if (aic32x4->power_cfg & AIC32X4_PWR_CMMODE_HP_LDOIN_POWERED)
-		tmp_reg |= AIC32X4_LDOIN2HP;
-	snd_soc_write(codec, AIC32X4_CMMODE, tmp_reg);
+		snd_soc_update_bits(codec, AIC32X4_CMMODE, AIC32X4_LDOIN2HP,
+				AIC32X4_LDOIN2HP);
 
 	/* Mic PGA routing */
 	if (aic32x4->micpga_routing & AIC32X4_MICPGA_ROUTE_LMIC_IN2R_10K)
@@ -663,10 +663,10 @@ static int aic32x4_codec_probe(struct snd_soc_codec *codec)
 	 * and down for the first capture to work properly. It seems related to
 	 * a HW BUG or some kind of behavior not documented in the datasheet.
 	 */
-	tmp_reg = snd_soc_read(codec, AIC32X4_ADCSETUP);
-	snd_soc_write(codec, AIC32X4_ADCSETUP, tmp_reg |
-				AIC32X4_LADC_EN | AIC32X4_RADC_EN);
-	snd_soc_write(codec, AIC32X4_ADCSETUP, tmp_reg);
+	snd_soc_update_bits(codec, AIC32X4_ADCSETUP, AIC32X4_LADC_EN | AIC32X4_RADC_EN,
+			AIC32X4_LADC_EN | AIC32X4_RADC_EN);
+	snd_soc_update_bits(codec, AIC32X4_ADCSETUP, AIC32X4_LADC_EN | AIC32X4_RADC_EN,
+			0);
 
 	return 0;
 }

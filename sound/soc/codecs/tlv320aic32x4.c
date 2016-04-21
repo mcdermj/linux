@@ -341,16 +341,30 @@ static int aic32x4_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 {
 	struct snd_soc_codec *codec = codec_dai->codec;
 	struct aic32x4_priv *aic32x4 = snd_soc_codec_get_drvdata(codec);
+	int ret = 0;
 
 	switch (freq) {
 	case AIC32X4_FREQ_12000000:
 	case AIC32X4_FREQ_24000000:
 	case AIC32X4_FREQ_25000000:
-		aic32x4->sysclk = freq;
-		return 0;
+		break;
+	default:
+		pr_err("aic32x4: invalid frequency to set DAI system clock\n");
+		return -EINVAL;
 	}
-	printk(KERN_ERR "aic32x4: invalid frequency to set DAI system clock\n");
-	return -EINVAL;
+
+	if(aic32x4->mclk) {
+		ret = clk_set_rate(aic32x4->mclk, freq);
+		if (ret) {
+			dev_err(codec_dai->dev, "Failed to set clock rate %d\n",
+					freq);
+			return ret;
+		}
+	}
+
+	aic32x4->sysclk = freq;
+
+	return 0;
 }
 
 static int aic32x4_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)

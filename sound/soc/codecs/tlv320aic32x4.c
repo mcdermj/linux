@@ -49,9 +49,6 @@
 struct aic32x4_rate_divs {
 	u32 mclk;
 	u32 rate;
-	u8 p_val;
-	u8 pll_j;
-	u16 pll_d;
 	u16 dosr;
 	u8 ndac;
 	u8 mdac;
@@ -135,34 +132,34 @@ static const struct snd_kcontrol_new aic32x4_snd_controls[] = {
 
 static const struct aic32x4_rate_divs aic32x4_divs[] = {
 	/* 8k rate */
-	{AIC32X4_FREQ_12000000, 8000, 1, 7, 6800, 768, 5, 3, 128, 5, 18, 24},
-	{AIC32X4_FREQ_24000000, 8000, 2, 7, 6800, 768, 15, 1, 64, 45, 4, 24},
-	{AIC32X4_FREQ_25000000, 8000, 2, 7, 3728, 768, 15, 1, 64, 45, 4, 24},
+	{AIC32X4_FREQ_12000000, 8000,  768, 5, 3, 128, 5, 18, 24},
+	{AIC32X4_FREQ_24000000, 8000,  768, 15, 1, 64, 45, 4, 24},
+	{AIC32X4_FREQ_25000000, 8000,  768, 15, 1, 64, 45, 4, 24},
 	/* 11.025k rate */
-	{AIC32X4_FREQ_12000000, 11025, 1, 7, 5264, 512, 8, 2, 128, 8, 8, 16},
-	{AIC32X4_FREQ_24000000, 11025, 2, 7, 5264, 512, 16, 1, 64, 32, 4, 16},
+	{AIC32X4_FREQ_12000000, 11025, 512, 8, 2, 128, 8, 8, 16},
+	{AIC32X4_FREQ_24000000, 11025, 512, 16, 1, 64, 32, 4, 16},
 	/* 16k rate */
-	{AIC32X4_FREQ_12000000, 16000, 1, 7, 6800, 384, 5, 3, 128, 5, 9, 12},
-	{AIC32X4_FREQ_24000000, 16000, 2, 7, 6800, 384, 15, 1, 64, 18, 5, 12},
-	{AIC32X4_FREQ_25000000, 16000, 2, 7, 3728, 384, 15, 1, 64, 18, 5, 12},
+	{AIC32X4_FREQ_12000000, 16000, 384, 5, 3, 128, 5, 9, 12},
+	{AIC32X4_FREQ_24000000, 16000, 384, 15, 1, 64, 18, 5, 12},
+	{AIC32X4_FREQ_25000000, 16000, 384, 15, 1, 64, 18, 5, 12},
 	/* 22.05k rate */
-	{AIC32X4_FREQ_12000000, 22050, 1, 7, 5264, 256, 4, 4, 128, 4, 8, 8},
-	{AIC32X4_FREQ_24000000, 22050, 2, 7, 5264, 256, 16, 1, 64, 16, 4, 8},
-	{AIC32X4_FREQ_25000000, 22050, 2, 7, 2253, 256, 16, 1, 64, 16, 4, 8},
+	{AIC32X4_FREQ_12000000, 22050, 256, 4, 4, 128, 4, 8, 8},
+	{AIC32X4_FREQ_24000000, 22050, 256, 16, 1, 64, 16, 4, 8},
+	{AIC32X4_FREQ_25000000, 22050, 256, 16, 1, 64, 16, 4, 8},
 	/* 32k rate */
-	{AIC32X4_FREQ_12000000, 32000, 1, 7, 1680, 192, 2, 7, 64, 2, 21, 6},
-	{AIC32X4_FREQ_24000000, 32000, 2, 7, 1680, 192, 7, 2, 64, 7, 6, 6},
+	{AIC32X4_FREQ_12000000, 32000, 192, 2, 7, 64, 2, 21, 6},
+	{AIC32X4_FREQ_24000000, 32000, 192, 7, 2, 64, 7, 6, 6},
 	/* 44.1k rate */
-	{AIC32X4_FREQ_12000000, 44100, 1, 7, 5264, 128, 2, 8, 128, 2, 8, 4},
-	{AIC32X4_FREQ_24000000, 44100, 2, 7, 5264, 128, 8, 2, 64, 8, 4, 4},
-	{AIC32X4_FREQ_25000000, 44100, 2, 7, 2253, 128, 8, 2, 64, 8, 4, 4},
+	{AIC32X4_FREQ_12000000, 44100, 128, 2, 8, 128, 2, 8, 4},
+	{AIC32X4_FREQ_24000000, 44100, 128, 8, 2, 64, 8, 4, 4},
+	{AIC32X4_FREQ_25000000, 44100, 128, 8, 2, 64, 8, 4, 4},
 	/* 48k rate */
-	{AIC32X4_FREQ_12000000, 48000, 1, 8, 1920, 128, 2, 8, 128, 2, 8, 4},
-	{AIC32X4_FREQ_24000000, 48000, 2, 8, 1920, 128, 8, 2, 64, 8, 4, 4},
-	{AIC32X4_FREQ_25000000, 48000, 2, 7, 8643, 128, 8, 2, 64, 8, 4, 4},
+	{AIC32X4_FREQ_12000000, 48000, 128, 2, 8, 128, 2, 8, 4},
+	{AIC32X4_FREQ_24000000, 48000, 128, 8, 2, 64, 8, 4, 4},
+	{AIC32X4_FREQ_25000000, 48000, 128, 8, 2, 64, 8, 4, 4},
 
 	/* 96k rate */
-	{AIC32X4_FREQ_25000000, 96000, 2, 7, 8643, 64, 4, 4, 64, 4, 4, 1},
+	{AIC32X4_FREQ_25000000, 96000, 64, 4, 4, 64, 4, 4, 1},
 };
 
 static const struct snd_kcontrol_new hpl_output_mixer_controls[] = {
@@ -422,9 +419,52 @@ static int aic32x4_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	return 0;
 }
 
-static int aic32x4_set_pll(struct snd_soc_codec *codec, int p, int j, int d)
+static int aic32x4_set_pll(struct snd_soc_codec *codec, unsigned int freq_in,
+		unsigned int freq_out)
 {
-	/* We will fix R value to 1 and will make P & J=K.D as varialble */
+	/*
+	 * PLL configuration rules are in TI document SLAA557 Page 77-8
+	 * Available at http://www.ti.com/lit/ml/slaa557/slaa557.pdf
+	 *
+	 * freq_out = freq_in * r * j.d / p
+	 */
+
+	unsigned int p;
+	unsigned int rj;
+	unsigned int r;
+	unsigned int j;
+	unsigned int min_freq;
+	u64 d;
+
+	p = freq_in / AIC32X4_PLL_MAX_FREQ_IN + 1;
+	if (p > AIC32X4_PLL_MAX_P) {
+		dev_err(codec->dev, "PLL input frequency %d above valid range\n",
+				freq_in);
+		return -EINVAL;
+	}
+
+	rj = (freq_out * p) / freq_in;
+
+	/*  R does initial scaling.  Maximum j.d value is 64 */
+	r = rj / AIC32X4_PLL_MAX_JD + 1;
+
+	j = rj % AIC32X4_PLL_MAX_JD;
+
+	/*
+	 * d is the decimal portion of j truncated to the ten-thousands
+	 * place
+	 */
+	d = ((freq_out * p) % freq_in) * 10000ull;
+	do_div(d, freq_in);
+
+	min_freq = d == 0 ? AIC32X4_PLL_MIN_INT_FREQ_IN :
+			AIC32X4_PLL_MIN_FRAC_FREQ_IN;
+	if (freq_in / p < min_freq) {
+		dev_err(codec->dev, "PLL input frequency %d below valid range\n",
+				freq_in);
+		return -EINVAL;
+	}
+
 	snd_soc_update_bits(codec, AIC32X4_PLLPR, AIC32X4_PLLR_MASK, 1);
 	snd_soc_update_bits(codec, AIC32X4_PLLPR, AIC32X4_PLLP_MASK,
 			p << AIC32X4_PLLP_SHIFT);
@@ -434,6 +474,11 @@ static int aic32x4_set_pll(struct snd_soc_codec *codec, int p, int j, int d)
 	snd_soc_write(codec, AIC32X4_PLLDMSB, (d >> 8));
 	snd_soc_write(codec, AIC32X4_PLLDLSB,
 		      (d & 0xff));
+
+	dev_info(codec->dev, "%s freq_in=%uHz, freq_out=%uHz\n", __func__,
+			freq_in, freq_out);
+	dev_info(codec->dev, "%s: calculated PLL P=%u, R=%u, J=%u, D=%llu\n",
+			__func__, p, r, j, d);
 
 	return 0;
 }
@@ -459,8 +504,9 @@ static int aic32x4_hw_params(struct snd_pcm_substream *substream,
 	snd_soc_update_bits(codec, AIC32X4_IFACE3, AIC32X4_BDIV_CLKIN_MASK,
 			AIC32X4_BDIV_CLKIN_DAC_MOD_CLK);
 
-	aic32x4_set_pll(codec, aic32x4_divs[i].p_val, aic32x4_divs[i].pll_j,
-			aic32x4_divs[i].pll_d);
+	aic32x4_set_pll(codec, aic32x4->sysclk,
+			params_rate(params) * aic32x4_divs[i].ndac *
+			aic32x4_divs[i].mdac * aic32x4_divs[i].dosr);
 
 	snd_soc_update_bits(codec, AIC32X4_NDAC, ~AIC32X4_NDACEN,
 			aic32x4_divs[i].ndac);

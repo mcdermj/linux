@@ -528,8 +528,8 @@ static int bcm2835_i2c_probe(struct platform_device *pdev)
 	}
 	i2c_dev->irq = irq->start;
 
-	ret = request_irq(i2c_dev->irq, bcm2835_i2c_isr, IRQF_SHARED,
-			  dev_name(&pdev->dev), i2c_dev);
+	ret = devm_request_irq(&pdev->dev, i2c_dev->irq, bcm2835_i2c_isr,
+				IRQF_SHARED, dev_name(&pdev->dev), i2c_dev);
 	if (ret) {
 		dev_err(&pdev->dev, "Could not request IRQ\n");
 		return -ENODEV;
@@ -576,11 +576,7 @@ static int bcm2835_i2c_probe(struct platform_device *pdev)
 
 	bcm2835_i2c_writel(i2c_dev, BCM2835_I2C_C, 0);
 
-	ret = i2c_add_adapter(adap);
-	if (ret)
-		free_irq(i2c_dev->irq, i2c_dev);
-
-	return ret;
+	return i2c_add_adapter(adap);
 }
 
 static int bcm2835_i2c_remove(struct platform_device *pdev)
